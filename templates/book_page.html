@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ book.title }} - Book Details
+{% endblock %}
+
+{% block content %}
+<div class="book-details">
+    <h1>{{ book.title }}</h1>
+    <p><strong>Author:</strong> {{ book.author }}</p>
+    <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+    <p><strong>Year:</strong> {{ book.year }}</p>
+    <!-- Link to API endpoint with tooltip and styling -->
+    <p>Developer? Access raw book data in JSON format:
+        <a href="{{ url_for('api_isbn', isbn=book.isbn) }}" target="_blank" title="Click to view raw JSON data for this book. Useful for developers and integrations." class="api-link">/api/{{ book.isbn }}</a>
+    </p>
+    <!-- Display Google Books data if available -->
+    {% if google_books_data %}
+    <div class="external-reviews">
+        <h2>External Reviews (Google Books)</h2>
+        {% if google_books_data.averageRating %}
+        <p><strong>Average Rating:</strong> {{ google_books_data.averageRating }} / 5</p>
+        {% else %}
+        <p><strong>Average Rating:</strong> Not available</p>
+        {% endif %}
+        {% if google_books_data.ratingsCount %}
+        <p><strong>Ratings Count:</strong> {{ google_books_data.ratingsCount }}</p>
+        {% else %}
+        <p><strong>Ratings Count:</strong> Not available</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<div class="reviews">
+    <h2>User Reviews</h2>
+    {% if reviews %}
+    {% for review in reviews %}
+    <div class="review">
+        <p><strong>Review by:</strong> {{ review.username }} (Rating: {{ review.rating }}/5)</p>
+        <p>{{ review.review }}</p>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>No reviews yet.</p>
+    {% endif %}
+</div>
+
+{% if "user_id" in session %}
+<div class="submit-review">
+    <h2>Submit Your Review</h2>
+    <form action="{{ url_for('book_page', isbn=book.isbn) }}" method="POST">
+        <label for="rating">Rating:</label>
+        <select name="rating" id="rating" required>
+            <option value="">Choose a rating</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <label for="review">Review:</label>
+        <textarea id="review" name="review" rows="4" required></textarea>
+        <button type="submit">Submit Review</button>
+    </form>
+</div>
+{% else %}
+<p>You must <a href="{{ url_for('login') }}">log in</a> to submit a review.</p>
+{% endif %}
+{% endblock %}
